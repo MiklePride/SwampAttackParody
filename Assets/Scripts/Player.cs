@@ -10,10 +10,12 @@ public class Player : MonoBehaviour
     [SerializeField] private Transform _shootPoint;
 
     private int _health;
+    private int _currentWeaponIndex = 0;
     private Weapon _currentWeapon;
     private Animator _animator;
 
     public event Action<int, int> HealthChenged;
+    public event Action<int> MoneyChenged;
 
     public int Money { get; private set; }
 
@@ -25,7 +27,7 @@ public class Player : MonoBehaviour
     private void Start()
     {
         _health = _maxHealth;
-        _currentWeapon = _weapons[0];
+        ChengeWeapon(_weapons[_currentWeaponIndex]);
     }
 
     private void Update()
@@ -36,9 +38,15 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void ChengeWeapon(Weapon weapon)
+    {
+        _currentWeapon = weapon;
+    }
+
     public void AddMoney(int reward)
     {
         Money += reward;
+        MoneyChenged?.Invoke(Money);
     }
 
     public void TakeDamage(int damage)
@@ -52,4 +60,41 @@ public class Player : MonoBehaviour
         if (_health <= 0)
             Destroy(gameObject);
     }
+
+    public void BuyWeapon(Weapon weapon)
+    {
+        Money -= weapon.Price;
+        _weapons.Add(weapon);
+        MoneyChenged?.Invoke(Money);
+    }
+
+    public void NextWeapon()
+    {
+        if (_currentWeaponIndex == _weapons.Count - 1)
+        {
+            _currentWeaponIndex = 0;
+        }
+        else
+        {
+            _currentWeaponIndex++;
+        }
+
+        ChengeWeapon(_weapons[_currentWeaponIndex]);
+    }
+
+    public void PreviousWeapon()
+    {
+        if (_currentWeaponIndex == 0)
+        {
+            _currentWeaponIndex = _weapons.Count - 1;
+        }
+        else
+        {
+            _currentWeaponIndex--;
+        }
+
+        ChengeWeapon(_weapons[_currentWeaponIndex]);
+    }
+
+
 }
